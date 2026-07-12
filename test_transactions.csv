@@ -1,0 +1,6 @@
+Date,Amount,Description,Category,Type
+2026-06-15,120.50,Weekly Groceries,Food,Expense
+2026-06-20,2500.00,Monthly Salary,Other,Income
+2026-06-15,120.50,Weekly Groceries,Food,Expense
+2026-abc-15,50.00,Bad date row,Food,Expense
+2026-06-16,xyz,Bad amount row,Food,Expense

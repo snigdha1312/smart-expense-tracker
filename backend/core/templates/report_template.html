@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Monthly Financial Report</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm;
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #94a3b8;
+      }
+      @bottom-left {
+        content: "Smart Expense Tracker - Generated on {{ generated_at }}";
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #94a3b8;
+      }
+    }
+    
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+
+    /* Header styling */
+    .header {
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 15px;
+      margin-bottom: 30px;
+    }
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .brand-title {
+      font-size: 24pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+    .brand-subtitle {
+      font-size: 10pt;
+      color: #10b981;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 3px;
+    }
+    .report-metadata {
+      text-align: right;
+      font-size: 9pt;
+      color: #64748b;
+    }
+    .report-title {
+      font-size: 16pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    /* Key metrics grid */
+    .metrics-container {
+      margin-bottom: 35px;
+    }
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .metric-card {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      width: 23%;
+    }
+    .metric-label {
+      font-size: 8pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 5px;
+    }
+    .metric-value {
+      font-size: 16pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .metric-value.income {
+      color: #059669;
+    }
+    .metric-value.expense {
+      color: #dc2626;
+    }
+
+    /* Sections */
+    .section-title {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-left: 4px solid #10b981;
+      padding-left: 10px;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+    }
+    .data-table th {
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 9pt;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .data-table td {
+      padding: 10px 12px;
+      font-size: 9pt;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+    .data-table tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    /* Category indicator */
+    .category-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    /* Budgets progress bar */
+    .progress-bar-bg {
+      background: #e2e8f0;
+      border-radius: 4px;
+      height: 8px;
+      width: 100px;
+      display: inline-block;
+      vertical-align: middle;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+    .progress-bar-fill.safe {
+      background: #10b981;
+    }
+    .progress-bar-fill.warning {
+      background: #f59e0b;
+    }
+    .progress-bar-fill.danger {
+      background: #ef4444;
+    }
+
+    /* Badges */
+    .status-badge {
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .status-badge.over {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .status-badge.ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    /* Footer note */
+    .footer-note {
+      margin-top: 40px;
+      font-size: 8pt;
+      color: #94a3b8;
+      text-align: center;
+      border-top: 1px dashed #e2e8f0;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <table class="header-table">
+      <tr>
+        <td>
+          <div class="brand-title">Smart Tracker</div>
+          <div class="brand-subtitle">Financial Analytics</div>
+        </td>
+        <td class="report-metadata">
+          <div><strong>User:</strong> {{ user_name }}</div>
+          <div><strong>Email:</strong> {{ user_email }}</div>
+          <div><strong>Report Period:</strong> {{ month_name }}</div>
+        </td>
+      </tr>
+    </table>
+    <div class="report-title">Monthly Financial Summary</div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="metrics-container">
+    <table class="metrics-table" style="width: 100%; table-layout: fixed;">
+      <tr>
+        <td class="metric-card" style="padding-right: 10px;">
+          <div class="metric-label">Total Income</div>
+          <div class="metric-value income">${{ total_income }}</div>
+        </td>
+        <td class="metric-card" style="padding-right: 10px; padding-left: 10px;">
+          <div class="metric-label">Total Expenses</div>
+          <div class="metric-value expense">${{ total_expense }}</div>
+        </td>
+        <td class="metric-card" style="padding-right: 10px; padding-left: 10px;">
+          <div class="metric-label">Net Savings</div>
+          <div class="metric-value" style="color: {% if net_savings_num >= 0 %}#059669{% else %}#dc2626{% endif %};">
+            ${{ net_savings }}
+          </div>
+        </td>
+        <td class="metric-card" style="padding-left: 10px;">
+          <div class="metric-label">Savings Rate</div>
+          <div class="metric-value" style="color: #0284c7;">{{ savings_rate }}%</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Category Breakdown -->
+  <div class="section-title">Expense by Category</div>
+  {% if categories %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th style="text-align: right;">Total Spent</th>
+        <th style="text-align: right;">% of Expenses</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cat in categories %}
+      <tr>
+        <td>
+          <span class="category-dot" style="background-color: {{ cat.color }};"></span>
+          {{ cat.name }}
+        </td>
+        <td style="text-align: right; font-weight: 600;">${{ cat.total }}</td>
+        <td style="text-align: right; color: #64748b;">{{ cat.percentage }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="font-size: 9pt; color: #64748b; font-style: italic;">No expenses recorded in this period.</p>
+  {% endif %}
+
+  <!-- Budget Performance -->
+  <div class="section-title">Budget Performance</div>
+  {% if budgets %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th style="text-align: right;">Limit</th>
+        <th style="text-align: right;">Spent</th>
+        <th>Progress</th>
+        <th style="text-align: center;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in budgets %}
+      <tr>
+        <td>{{ b.category_name }}</td>
+        <td style="text-align: right;">${{ b.limit_amount }}</td>
+        <td style="text-align: right; font-weight: 600;">${{ b.spent_amount }}</td>
+        <td style="vertical-align: middle;">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill {% if b.percentage_used >= 100 %}danger{% elif b.percentage_used >= 80 %}warning{% else %}safe{% endif %}" 
+                 style="width: {{ b.percentage_clamped }}%;"></div>
+          </div>
+          <span style="font-size: 8pt; color: #64748b; margin-left: 5px; font-family: monospace;">{{ b.percentage_used }}%</span>
+        </td>
+        <td style="text-align: center;">
+          {% if b.is_over %}
+          <span class="status-badge over">Over</span>
+          {% else %}
+          <span class="status-badge ok">On Track</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="font-size: 9pt; color: #64748b; font-style: italic;">No category budgets configured for this month.</p>
+  {% endif %}
+
+  <div class="footer-note">
+    Thank you for using Smart Expense Tracker to secure your financial health. Keep building wealth!
+  </div>
+
+</body>
+</html>
